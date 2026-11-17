@@ -22,13 +22,15 @@
       </div>
       <section class="panel connection-panel">
         <div class="section-heading"><div><div class="eyebrow">WHATSAPP SESSION</div><h2>Hubungkan WhatsApp</h2></div><span class="state" id="connectionState">BELUM TERHUBUNG</span></div>
-        <p class="muted">Masukkan nomor WhatsApp, lalu tampilkan QR untuk menautkan perangkat milikmu.</p>
+        <p class="muted">Pilih Pairing Code atau QR untuk menautkan WhatsApp milikmu.</p>
         <label for="phone">Nomor WhatsApp</label>
         <input id="phone" type="tel" inputmode="numeric" placeholder="62812xxxxxxxx" autocomplete="tel">
         <div class="actions">
-          <button class="primary" id="qrBtn">GUNAKAN QR</button>
+          <button class="primary" id="pairBtn">PAIRING CODE</button>
+          <button class="secondary" id="qrBtn">GUNAKAN QR</button>
           <button class="danger hidden" id="disconnectBtn">PUTUSKAN</button>
         </div>
+        <div id="pairBox" class="result-box hidden"><span class="muted">PAIRING CODE</span><strong id="pairCode">--------</strong><button class="copy-btn" id="copyCodeBtn">Salin kode</button></div>
         <div id="qrBox" class="qr-box hidden"><img id="qrImage" alt="QR code WhatsApp"><p class="muted">WhatsApp → Perangkat tertaut → Tautkan perangkat</p></div>
         <p class="tiny">Jangan bagikan QR kepada orang lain. QR hanya untuk menautkan WhatsApp milikmu.</p>
       </section>
