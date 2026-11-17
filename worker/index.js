@@ -157,6 +157,36 @@ async function handleMessage(userId, sock, msg) {
     if (command === "menu") return reply(menuText(msg.pushName));
     if (command === "owner") return reply("OWN MINATOHOST\nWhatsApp: 082180696427");
     if (command === "status") return reply("Status: MINATOHOST");
+    if (["grouplink", "groupinfo", "groupname", "groupdesc", "groupmembers", "groupadmins", "groupowner", "groupid", "groupcount"].includes(command)) {
+      if (!group) return reply("Command ini hanya bisa digunakan di grup.");
+      if (!metadata) return reply("Tidak bisa membaca data grup.");
+      if (command === "grouplink") {
+        if (!senderAdmin) return reply("Khusus admin grup.");
+        if (!botAdmin) return reply("Bot harus menjadi admin untuk mengambil tautan grup.");
+        try {
+          const code = await sock.groupInviteCode(jid);
+          return reply("LINK GRUP\\nhttps://chat.whatsapp.com/" + code);
+        } catch (_) {
+          return reply("Gagal mengambil tautan grup.");
+        }
+      }
+      if (command === "groupinfo") {
+        return reply("INFO GRUP\\nNama: " + (metadata.subject || "-") + "\\nID: " + jid + "\\nAnggota: " + (metadata.participants || []).length + "\\nAdmin: " + (metadata.participants || []).filter((p) => p.admin).length);
+      }
+      if (command === "groupname") return reply("Nama grup: " + (metadata.subject || "-"));
+      if (command === "groupdesc") return reply("Deskripsi grup: " + (metadata.desc || "Belum ada deskripsi."));
+      if (command === "groupmembers" || command === "groupcount") return reply("Jumlah anggota grup: " + (metadata.participants || []).length);
+      if (command === "groupadmins") {
+        const admins = (metadata.participants || []).filter((p) => p.admin);
+        return reply("ADMIN GRUP\\n" + (admins.length ? admins.map((p) => "• @" + numberFromJid(p.id)).join("\\n") : "Belum ada data admin."), { mentions: admins.map((p) => p.id) });
+      }
+      if (command === "groupowner") {
+        const creator = metadata.owner || (metadata.participants || []).find((p) => p.admin === "superadmin")?.id;
+        return reply("Pembuat grup: " + (creator ? "@" + numberFromJid(creator) : "Tidak diketahui."), creator ? { mentions: [creator] } : {});
+      }
+      if (command === "groupid") return reply("ID grup: " + jid);
+    }
+
     if (command === "ping") return reply("Pong! MINATOHOST aktif.");
     if (command === "runtime") {
       const seconds = Math.floor(process.uptime());
