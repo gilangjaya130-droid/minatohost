@@ -129,7 +129,7 @@ async function handleMessage(userId, sock, msg) {
     const group = jid.endsWith("@g.us");
     const sender = group ? (msg.key.participant || "") : jid;
     const metadata = group ? await groupInfo(sock, jid) : null;
-    const senderAdmin = msg.key.fromMe || isAdmin(metadata, sender);
+    const senderAdmin = isAdmin(metadata, sender);
     const botAdmin = isAdmin(metadata, sock.user?.id || "");
     const settings = await getSettings(userId);
 
@@ -196,7 +196,7 @@ async function handleMessage(userId, sock, msg) {
       }
       if (!botAdmin) return reply("Jadikan bot admin grup terlebih dahulu.");
       const context = msg.message?.extendedTextMessage?.contextInfo || {};
-      const targets = context.mentionedJid || (context.participant ? [context.participant] : []);
+      const targets = (context.mentionedJid && context.mentionedJid.length) ? context.mentionedJid : (context.participant ? [context.participant] : []);
       if (!targets.length && args[0]) targets.push(args[0].replace(/\D/g, "") + "@s.whatsapp.net");
       if (!targets.length) return reply("Tag anggota yang ingin diproses.");
       const action = command === "kick" ? "remove" : command;
