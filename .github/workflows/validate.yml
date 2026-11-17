@@ -1,0 +1,20 @@
+name: Validate MINATOHOST source
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+jobs:
+  syntax:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Check JavaScript syntax
+        run: |
+          node --check app.js
+          node --check worker/index.js
+      - name: Check worker package JSON
+        run: node -e "JSON.parse(require('fs').readFileSync('worker/package.json','utf8'))"
