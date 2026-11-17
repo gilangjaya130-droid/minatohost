@@ -121,15 +121,14 @@ function menuText(pushName) {
   ];
   const total = sections.reduce((sum, section) => sum + section[1].length, 0);
   return greeting + "\n\n" +
-    "╭━━〔 MINATOHOST BOT 〕━━╮\\n" +
-    "┃ User   : " + (pushName || "WhatsApp User") + "\\n" +
-    "┃ Status : FREE\\n" +
-    "┃ Date   : " + date + "\\n" +
-    "┃ Server : MINATOHOST\\n" +
-    "┃ Total  : " + total + "+ commands\\n" +
-    "╰━━━━━━━━━━━━━━━━━━━━╯\\n\\n" +
-    sections.map(([name, commands]) => "┏━━〔 " + name + " 〕\\n" + commands.map(command => "┃ • " + command).join("\\n") + "\\n┗━━━━━━━━━━━━").join("\\n\\n") +
-    "\\n\\nMINATOHOST • Made for WhatsApp\\nKetik .menu untuk melihat daftar command.";
+    "╭━━ MINATOHOST ━━╮\n" +
+    "┃ User    : " + (pushName || "WhatsApp User") + "\n" +
+    "┃ Founder : MAYON\n" +
+    "┃ Server  : minatohost\n" +
+    "┃ Date    : " + date + "\n" +
+    "╰━━━━━━━━━━━━━━╯\n\n" +
+    sections.map(([name, commands]) => "┏━━〔 " + name + " 〕\n" + commands.map(command => "┃ • " + command).join("\n") + "\n┗━━━━━━━━━━━━").join("\n\n") +
+    "\n\nMINATOHOST • Made for WhatsApp\nKetik .menu untuk melihat daftar command.";
 }
 async function handleMessage(userId, sock, msg) {
   try {
