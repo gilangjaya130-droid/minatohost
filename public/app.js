@@ -87,6 +87,7 @@
       return;
     }
     $("qrBox").classList.add("hidden");
+    $("pairBox").classList.add("hidden");
     $("qrBtn").disabled = true;
     $("qrBtn").textContent = "MEMBUAT QR...";
     try {
@@ -98,6 +99,28 @@
     } finally {
       $("qrBtn").disabled = false;
       $("qrBtn").textContent = "GUNAKAN QR";
+    }
+  }
+
+  async function connectPairing() {
+    const phone = $("phone").value.replace(/[^0-9]/g, "");
+    if (phone.length < 10 || phone.length > 15) {
+      toast("Masukkan nomor dengan kode negara, contoh 62812xxxx.");
+      return;
+    }
+    $("pairBox").classList.add("hidden");
+    $("qrBox").classList.add("hidden");
+    $("pairBtn").disabled = true;
+    $("pairBtn").textContent = "MEMINTA KODE...";
+    try {
+      await api("/api/connect", { mode: "pairing", phone });
+      toast("Permintaan pairing dikirim. Tunggu kode muncul.");
+      setTimeout(refreshStatus, 1200);
+    } catch (error) {
+      toast(error.message);
+    } finally {
+      $("pairBtn").disabled = false;
+      $("pairBtn").textContent = "PAIRING CODE";
     }
   }
 
@@ -113,6 +136,12 @@
       $("connectionState").classList.toggle("connected", status === "connected");
       $("disconnectBtn").classList.toggle("hidden", status === "disconnected");
       $("qrBtn").disabled = ["connected", "connecting", "waiting_qr"].includes(status);
+      if (data.pairingCode) {
+        $("pairCode").textContent = data.pairingCode;
+        $("pairBox").classList.remove("hidden");
+      } else if (status === "connected" || status === "disconnected") {
+        $("pairBox").classList.add("hidden");
+      }
       if (data.qr) {
         $("qrImage").src = data.qr;
         $("qrBox").classList.remove("hidden");
@@ -166,7 +195,12 @@
     }
   }
 
+  $("pairBtn").addEventListener("click", connectPairing);
   $("qrBtn").addEventListener("click", connectQR);
+  $("copyCodeBtn").addEventListener("click", async () => {
+    try { await navigator.clipboard.writeText($("pairCode").textContent); toast("Kode pairing disalin."); }
+    catch (_) { toast("Gagal menyalin kode."); }
+  });
   $("disconnectBtn").addEventListener("click", disconnect);
   $("startBtn").addEventListener("click", () => setBotActive(true));
   $("stopBtn").addEventListener("click", () => setBotActive(false));
