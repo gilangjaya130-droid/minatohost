@@ -210,8 +210,8 @@
   $("refreshLogsBtn").addEventListener("click", refreshLogs);
 
   if (!configured || !window.supabase) {
-    toast("Konfigurasi Supabase belum lengkap. Dashboard belum dapat menghubungkan bot.");
-    $("botMessage").textContent = "Pengelola perlu mengisi Supabase publishable key dan URL worker.";
+    toast("Konfigurasi dashboard belum lengkap. Bot belum dapat dihubungkan.");
+    $("botMessage").textContent = "Pengelola perlu melengkapi konfigurasi koneksi dan URL worker.";
     return;
   }
   sb = window.supabase.createClient(cfg.SUPABASE_URL, cfg.SUPABASE_ANON_KEY);
@@ -227,8 +227,8 @@
       if (!currentSession) throw new Error("Sesi tamu tidak berhasil dibuat.");
       showDashboard();
     } catch (error) {
-      toast("Mode tamu gagal dibuat: " + (error.message || "Periksa pengaturan Supabase."));
-      $("botMessage").textContent = "Aktifkan Anonymous Sign-In di Supabase Authentication.";
+      toast("Mode tamu gagal dibuat: " + (error.message || "Periksa konfigurasi dashboard."));
+      $("botMessage").textContent = "Aktifkan akses pengguna tamu pada layanan autentikasi.";
     }
   })();
   sb.auth.onAuthStateChange((_event, session) => {
