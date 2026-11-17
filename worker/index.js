@@ -39,7 +39,7 @@ const numberFromJid = (jid = "") => jidBase(jid).split("@")[0];
 
 async function logActivity(userId, message, level = "info") {
   try {
-    await supabase.from("bot_logs").insert({ user_id: userId, message, level });
+    await supabase.from("bot_logs").insert({ user_id: userId, event: "bot_activity", message, level });
   } catch (error) {
     console.error("Log error:", error.message);
   }
@@ -51,20 +51,21 @@ async function setSessionRecord(userId, status, phone = "") {
 }
 async function getSettings(userId) {
   const { data, error } = await supabase.from("bot_settings")
-    .select("anti_link,welcome,goodbye").eq("user_id", userId).maybeSingle();
+    .select("bot_enabled,anti_link,welcome,goodbye").eq("user_id", userId).maybeSingle();
   if (error) throw error;
-  return data || { anti_link: false, welcome: false, goodbye: false };
+  return data || { bot_enabled: false, anti_link: false, welcome: false, goodbye: false };
 }
 async function saveSettings(userId, settings) {
   const row = {
     user_id: userId,
+    bot_enabled: !!settings.bot_enabled,
     anti_link: !!settings.anti_link,
     welcome: !!settings.welcome,
     goodbye: !!settings.goodbye,
     updated_at: new Date().toISOString()
   };
   const { data, error } = await supabase.from("bot_settings")
-    .upsert(row, { onConflict: "user_id" }).select("anti_link,welcome,goodbye").single();
+    .upsert(row, { onConflict: "user_id" }).select("bot_enabled,anti_link,welcome,goodbye").single();
   if (error) throw error;
   return data;
 }
@@ -132,6 +133,7 @@ async function handleMessage(userId, sock, msg) {
     const senderAdmin = isAdmin(metadata, sender);
     const botAdmin = isAdmin(metadata, sock.user?.id || "");
     const settings = await getSettings(userId);
+    if (!settings.bot_enabled) return;
 
     if (group && settings.anti_link && !msg.key.fromMe && !senderAdmin &&
         /(https?:\/\/|www\.|chat\.whatsapp\.com\/)/i.test(text)) {
