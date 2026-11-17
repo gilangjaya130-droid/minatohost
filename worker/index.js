@@ -109,7 +109,7 @@ async function sendReply(sock, jid, msg, text, extra = {}) {
 function menuText(pushName) {
   const hour = new Date().getHours();
   const greeting = hour < 11 ? "Selamat Pagi" : hour < 15 ? "Selamat Siang" : hour < 18 ? "Selamat Sore" : "Selamat Malam";
-  const date = new Date().toLocaleDateString("id-ID");
+  const date = new Intl.DateTimeFormat("id-ID", { timeZone: "Asia/Jakarta", day: "2-digit", month: "2-digit", year: "numeric" }).format(new Date());
   const sections = [
     ["MINATO CORE", [".menu", ".help", ".ping", ".runtime", ".owner", ".status", ".botinfo", ".profile"]],
     ["GROUP DATA", [".groupinfo", ".membercount", ".listadmin", ".groupname", ".groupdesc"]],
