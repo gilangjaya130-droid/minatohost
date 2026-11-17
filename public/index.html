@@ -30,7 +30,6 @@
           <button class="secondary" id="qrBtn">GUNAKAN QR</button>
           <button class="danger hidden" id="disconnectBtn">PUTUSKAN</button>
         </div>
-        <div id="pairBox" class="result-box hidden"><span class="muted">PAIRING CODE</span><strong id="pairCode">--------</strong><button class="copy-btn" id="copyCodeBtn">Salin kode</button></div>
         <div id="qrBox" class="qr-box hidden"><img id="qrImage" alt="QR code WhatsApp"><p class="muted">WhatsApp → Perangkat tertaut → Tautkan perangkat</p></div>
         <p class="tiny">Jangan bagikan QR kepada orang lain. QR hanya untuk menautkan WhatsApp milikmu.</p>
       </section>
@@ -51,6 +50,7 @@
       </section>
       <footer>MINATOHOST BOT <span>•</span> Gunakan fitur grup hanya jika kamu memiliki izin admin.</footer>
     </section>
+    <section id="pairPage" class="pair-page hidden"><div class="pair-card"><div class="eyebrow">MINATOHOST • WHATSAPP</div><h1>Masukkan Kode</h1><p class="muted">Masukkan kode ini di WhatsApp pada menu Perangkat tertaut.</p><div class="pair-code-label">CODE</div><div id="pairCode" class="pair-code">--------</div><button class="primary pair-copy" id="copyCodeBtn">SALIN</button><button class="ghost pair-back" id="backPairBtn">KEMBALI</button><p class="tiny">Jangan bagikan kode ini kepada siapa pun.</p></div></section>
     <div id="toast" class="toast" role="status"></div>
   </main>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
