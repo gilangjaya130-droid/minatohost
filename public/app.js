@@ -1,7 +1,6 @@
 (() => {
   const cfg = window.MINATO_CONFIG || {};
   const $ = (id) => document.getElementById(id);
-  const authView = $("authView");
   const dashboardView = $("dashboardView");
   const toast = (message) => {
     $("toast").textContent = message;
@@ -12,33 +11,17 @@
     !String(cfg.SUPABASE_URL).startsWith("ISI_") && !String(cfg.SUPABASE_ANON_KEY).startsWith("ISI_");
   let sb = null;
   let currentSession = null;
-  let authMode = "login";
   let pollHandle = null;
 
-  function showAuth() {
-    authView.classList.remove("hidden");
-    dashboardView.classList.add("hidden");
-    if (pollHandle) clearInterval(pollHandle);
-  }
   function showDashboard() {
     authView.classList.add("hidden");
     dashboardView.classList.remove("hidden");
-    $("accountEmail").textContent = currentSession.user.email || "Akun MINATOHOST";
+    $("accountEmail").textContent = "Mode tamu • sesi tersimpan di perangkat ini";
     loadSettings();
     refreshStatus();
     refreshLogs();
     if (pollHandle) clearInterval(pollHandle);
     pollHandle = setInterval(refreshStatus, 3500);
-  }
-  function setAuthMode(mode) {
-    authMode = mode;
-    $("loginTab").classList.toggle("active", mode === "login");
-    $("registerTab").classList.toggle("active", mode === "register");
-    $("authTitle").textContent = mode === "login" ? "Selamat datang" : "Buat akun";
-    $("authSubtitle").textContent = mode === "login" ? "Masuk ke akun MINATOHOST kamu." : "Daftar untuk membuat dashboard bot sendiri.";
-    $("authSubmit").textContent = mode === "login" ? "Masuk" : "Buat akun";
-    $("password").autocomplete = mode === "login" ? "current-password" : "new-password";
-    $("authMessage").textContent = "";
   }
   async function api(path, body) {
     if (!cfg.BOT_API_URL || String(cfg.BOT_API_URL).startsWith("ISI_")) throw new Error("URL worker belum diatur.");
@@ -197,9 +180,7 @@
     }
   }
 
-  $("loginTab").addEventListener("click", () => setAuthMode("login"));
-  $("registerTab").addEventListener("click", () => setAuthMode("register"));
-  $("authForm").addEventListener("submit", handleAuth);
+
   $("pairBtn").addEventListener("click", () => connect("pairing"));
   $("qrBtn").addEventListener("click", () => connect("qr"));
   $("disconnectBtn").addEventListener("click", disconnect);
@@ -209,24 +190,32 @@
     try { await navigator.clipboard.writeText($("pairCode").textContent); toast("Kode disalin."); }
     catch (_) { toast("Tidak dapat menyalin otomatis."); }
   });
-  $("logoutBtn").addEventListener("click", async () => {
-    await sb.auth.signOut();
-    currentSession = null;
-    showAuth();
-  });
 
   if (!configured || !window.supabase) {
-    $("authMessage").textContent = "Isi SUPABASE_URL dan SUPABASE_ANON_KEY di config.js terlebih dahulu.";
+    toast("Konfigurasi Supabase belum lengkap. Hubungi pengelola MINATOHOST.");
     return;
   }
   sb = window.supabase.createClient(cfg.SUPABASE_URL, cfg.SUPABASE_ANON_KEY);
-  sb.auth.getSession().then(({ data }) => {
-    currentSession = data.session;
-    if (currentSession) showDashboard();
-  });
+  (async () => {
+    try {
+      const existing = await sb.auth.getSession();
+      currentSession = existing.data.session;
+      if (!currentSession) {
+        const guest = await sb.auth.signInAnonymously();
+        if (guest.error) throw guest.error;
+        currentSession = guest.data.session;
+      }
+      if (currentSession) showDashboard();
+      else throw new Error("Sesi tamu tidak berhasil dibuat.");
+    } catch (error) {
+      toast("Gagal membuka mode tanpa login: " + (error.message || "Periksa pengaturan Supabase."));
+    }
+  })();
   sb.auth.onAuthStateChange((_event, session) => {
-    currentSession = session;
-    if (session) showDashboard();
-    else showAuth();
+    if (session) {
+      currentSession = session;
+      showDashboard();
+    }
   });
+
 })();
