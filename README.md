@@ -1,82 +1,43 @@
 # MINATOHOST BOT
 
-Dashboard multi-akun WhatsApp dengan pairing code, QR, pengaturan grup, dan log aktivitas.
+Dashboard multi-akun WhatsApp dengan Supabase Auth, QR/pairing code, pengaturan, dan worker Baileys.
 
-## Isi repository
+## Repository
+- `index.html`, `style.css`, `app.js`, `config.js`: website dashboard.
+- `worker/`: Node.js worker WhatsApp.
+- `supabase/schema.sql`: skema database untuk project baru.
+- `supabase/migrate_from_previous.sql`: migrasi untuk database yang dibuat dari SQL MINATOHOST versi sebelumnya.
 
-- Website statis untuk Vercel: `index.html`, `style.css`, `app.js`, `config.js`
-- Worker WhatsApp yang berjalan terus-menerus: folder `worker/`
-- Struktur database dan aturan akses: `supabase/schema.sql`
+## Database yang sudah dibuat dari SQL versi sebelumnya
+Karena database kamu sudah menjalankan SQL yang dikirim sebelumnya, buka Supabase SQL Editor dan jalankan isi file:
+`supabase/migrate_from_previous.sql`.
+Ini menambahkan kolom yang dibutuhkan worker, termasuk status waiting_qr, pengaturan bot aktif, dan event log.
 
-## Penting: Vercel bukan tempat menjalankan koneksi WhatsApp 24/7
-
-Vercel dipakai untuk website dashboard. Koneksi WhatsApp Baileys berjalan pada worker Node.js terpisah karena koneksi WhatsApp harus tetap hidup. Blueprint worker disediakan di `render.yaml`. Blueprint memakai disk persisten dan paket Render berbayar yang mendukung persistent disk; jangan menganggap worker akan stabil jika dijalankan pada fungsi serverless atau filesystem sementara.
-
-## 1. Siapkan Supabase
-
-1. Buat project baru di Supabase.
-2. Buka **SQL Editor**.
-3. Salin seluruh isi `supabase/schema.sql`, lalu jalankan.
-4. Buka **Project Settings → API**.
-5. Catat Project URL, anon/public key, dan service_role key.
-6. Jangan pernah memasukkan service_role key ke file website atau membagikannya.
-
-## 2. Siapkan worker WhatsApp
-
-1. Buka Render dan pilih **New → Blueprint**.
-2. Hubungkan repository `gilangjaya130-droid/minatohost`.
-3. Render akan membaca `render.yaml` di root repository.
-4. Isi environment variables yang diminta:
-   - `SUPABASE_URL`: Project URL Supabase.
-   - `SUPABASE_SERVICE_ROLE_KEY`: service_role key Supabase.
-5. Deploy worker. Tunggu sampai statusnya Live.
-6. Salin URL worker, misalnya URL HTTPS dari layanan Render.
-
-Worker menggunakan disk persisten untuk menyimpan kredensial sesi WhatsApp. Jangan menghapus disk tersebut jika ingin mempertahankan sesi yang tertaut.
-
-## 3. Siapkan website di Vercel
-
-1. Buka Vercel, pilih **Add New → Project**.
+## Deploy website ke Vercel
+1. Buka https://vercel.com/new
 2. Import repository `gilangjaya130-droid/minatohost`.
-3. Framework Preset: **Other**.
-4. Root Directory: `./`.
-5. Build Command: kosongkan.
-6. Output Directory: `.`.
-7. Deploy.
+3. Framework Preset: Other; Root Directory: `./`.
+4. Build Command kosong; Output Directory: `.`.
+5. Deploy.
+6. Vercel akan menampilkan URL website setelah deployment selesai.
 
-Setelah worker Live, buka file `config.js` di GitHub lalu tekan edit. Isi:
+Sebelum website bisa login, edit `config.js` di GitHub:
+- `SUPABASE_URL`: `https://ixjlmutcnmylrafheayi.supabase.co`
+- `SUPABASE_ANON_KEY`: Supabase Project Settings → API Keys → publishable key (atau legacy anon public key).
+- `BOT_API_URL`: URL HTTPS worker setelah worker di-host.
 
-- `SUPABASE_URL` dengan Project URL Supabase.
-- `SUPABASE_ANON_KEY` dengan anon/public key Supabase.
-- `BOT_API_URL` dengan URL worker HTTPS.
+Publishable/anon key boleh ada di frontend. Jangan pernah menaruh `service_role` / secret key di frontend.
 
-Simpan perubahan, lalu tunggu Vercel melakukan deployment ulang. URL website akan diberikan Vercel setelah deployment berhasil. Nama domain `minatohost.vercel.app` hanya bisa dipakai jika masih tersedia dan berhasil ditetapkan oleh Vercel.
+## Deploy worker WhatsApp
+Vercel hanya meng-host website; koneksi WhatsApp perlu worker Node.js persisten.
+1. Buka https://render.com dan pilih New → Blueprint.
+2. Hubungkan repository ini; Render membaca `render.yaml`.
+3. Isi `SUPABASE_URL` dengan URL project dan `SUPABASE_SERVICE_ROLE_KEY` dengan service_role key dari Supabase.
+4. Deploy worker. Blueprint memakai persistent disk dan paket berbayar yang mendukung disk persisten.
+5. Salin URL HTTPS worker, lalu isi `BOT_API_URL` di `config.js` dan commit.
 
-## 4. Cara memakai
+Jangan membagikan password, service_role key, atau file sesi WhatsApp.
 
-1. Buka website Vercel.
-2. Daftar akun dengan email dan password.
-3. Masuk ke dashboard.
-4. Pilih **Pairing Code** dan masukkan nomor dengan kode negara (contoh format Indonesia: 62812xxxx), atau pilih **Gunakan QR**.
-5. Ikuti petunjuk di WhatsApp → Perangkat tertaut.
-6. Aktifkan pengaturan grup dari dashboard atau command admin di grup.
-
-## Command bot
-
-- `.menu`, `.ping`, `.runtime`, `.status`, `.owner`
-- `.antilink on/off`
-- `.welcome on/off`
-- `.goodbye on/off`
-- `.tagall`, `.hidetag`
-- `.kick @tag`, `.promote @tag`, `.demote @tag`
-
-Command moderasi dan pengaturan grup dibatasi untuk admin grup. Bot harus menjadi admin agar dapat menghapus tautan atau mengelola anggota. Menu bot menampilkan **Status: MINATOHOST** dan tidak menampilkan baris server.
-
-## Keamanan dan batasan
-
-- Setiap akun dashboard diverifikasi menggunakan Supabase Auth. Worker memisahkan sesi berdasarkan ID akun.
-- Service role key hanya boleh disimpan sebagai environment variable worker.
-- Pairing code dan QR adalah akses ke akun WhatsApp. Jangan bagikan kepada siapa pun.
-- Gunakan hanya nomor WhatsApp milik sendiri atau yang penggunaannya telah diizinkan.
-- Worker ini memakai Baileys, yaitu integrasi WhatsApp Web tidak resmi, bukan WhatsApp Business Platform resmi. Penggunaan dapat memiliki risiko pembatasan akun dan perubahan kompatibilitas. Hindari spam, pesan massal, dan aktivitas yang melanggar ketentuan WhatsApp.
-- Website belum bisa dipakai sebelum Supabase, worker, dan Vercel dikonfigurasi. Mengunggah source code ke GitHub saja belum membuat bot online.
+## Perintah bot
+`.menu`, `.owner`, `.status`, `.ping`, `.runtime`, `.antilink on/off`, `.welcome on/off`, `.goodbye on/off`, `.tagall`, `.hidetag`, `.kick`, `.promote`, `.demote`.
+Perintah pengelolaan anggota hanya berjalan jika pengirim dan bot memiliki hak admin yang sesuai.
