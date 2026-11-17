@@ -110,18 +110,18 @@ function menuText(pushName) {
   const hour = new Date().getHours();
   const greeting = hour < 11 ? "Selamat Pagi" : hour < 15 ? "Selamat Siang" : hour < 18 ? "Selamat Sore" : "Selamat Malam";
   const date = new Date().toLocaleDateString("id-ID");
-  return greeting + "\n\n" +
-    "User: " + (pushName || "WhatsApp User") + "\n" +
-    "Status: MINATOHOST\n" +
-    "Date: " + date + "\n\n" +
-    "━━ MAIN ━━\n" +
-    "• .menu\n• .ping\n• .runtime\n• .owner\n• .status\n\n" +
-    "━━ GROUP ━━\n" +
-    "• .grouplink\n• .groupinfo\n• .groupname\n• .groupdesc\n• .groupmembers\n• .groupadmins\n• .groupowner\n• .groupid\n• .listonline\n\n" +
-    "━━ ADMIN ━━\n" +
-    "• .antilink on/off\n• .welcome on/off\n• .goodbye on/off\n" +
-    "• .tagall [pesan]\n• .hidetag [pesan]\n" +
-    "• .kick @tag\n• .promote @tag\n• .demote @tag";
+  const sections = [
+    ["MAIN", [".menu", ".help", ".ping", ".runtime", ".owner", ".status", ".botinfo", ".profile"]],
+    ["GROUP", [".groupinfo", ".membercount", ".listadmin", ".groupname", ".groupdesc", ".grouplink", ".tagall", ".hidetag"]],
+    ["ADMIN", [".antilink on/off", ".welcome on/off", ".goodbye on/off", ".kick @tag", ".add nomor", ".promote @tag", ".demote @tag", ".setname teks", ".setdesc teks", ".open", ".close", ".mute", ".unmute", ".revoke", ".resetlink", ".admins", ".delete", ".pin", ".unpin"]],
+    ["TOOLS", [".calc", ".math", ".time", ".date", ".day", ".month", ".year", ".count", ".reverse", ".upper", ".lower", ".title", ".trim", ".length", ".charcount", ".wordcount", ".base64", ".unbase64", ".urlencode", ".urldecode", ".binary", ".hex", ".morse", ".rot13", ".random", ".randombetween", ".choose", ".dice", ".coin", ".percentage"]],
+    ["TEXT MAKER", [".quote", ".motivasi", ".pantun", ".fakta", ".jokes", ".say", ".tebal", ".miring", ".garis", ".bubble", ".small", ". zalgo", ".clap", ".brat", ".mock", ".uwu", ".poem", ".bio", ".nickname", ".slogan", ".caption", ".statuswa", ".loveletter", ".thankyou", ".sorry"]],
+    ["FUN", [".truth", ".dare", ".ship", ".rate", ".howgay", ".howcute", ".howsmart", ".pickupline", ".roast", ".compliment", ".riddle", ".quiz", ".answer", ".suit", ".tebakangka", ".flip", ".dice2", ".8ball", ".coinflip", ".randomnumber"]],
+    ["INFORMASI", [".creator", ".version", ".server", ".runtime", ".uptime", ".support", ".rules", ".donasi", ".contact", ".source"]]
+  ];
+  return greeting + "\n\nUser: " + (pushName || "WhatsApp User") + "\nStatus: MINATOHOST\nDate: " + date +
+    "\nTotal command: 100+\n\n" + sections.map(([name, commands]) => "【 " + name + " 】\n" + commands.join("\n")).join("\n\n") +
+    "\n\nMINATOHOST BOT • Gunakan command dengan awalan titik.";
 }
 async function handleMessage(userId, sock, msg) {
   try {
@@ -153,6 +153,96 @@ async function handleMessage(userId, sock, msg) {
     const command = (parts.shift() || "").toLowerCase();
     const args = parts;
     const reply = (value, extra) => sendReply(sock, jid, msg, value, extra || {});
+    const input = args.join(" ");
+    const pick = (items) => items[Math.floor(Math.random() * items.length)];
+    const utilityReplies = {
+      help: () => menuText(msg.pushName),
+      botinfo: () => "MINATOHOST BOT\\nMulti-device WhatsApp bot\\nStatus: " + (sock.user ? "connected" : "connecting"),
+      profile: () => "Nama: " + (msg.pushName || "WhatsApp User") + "\\nNomor: " + numberFromJid(sender),
+      info: () => "MINATOHOST BOT — Asisten WhatsApp dengan fitur grup, teks, dan utilitas.",
+      creator: () => "Creator: OWN MINATOHOST\\nWhatsApp: 082180696427",
+      version: () => "MINATOHOST BOT v2.0",
+      server: () => "Worker: aktif\\nNode.js: " + process.version,
+      uptime: () => "Uptime: " + Math.floor(process.uptime()) + " detik",
+      support: () => "Hubungi OWN MINATOHOST: 082180696427",
+      rules: () => "Gunakan bot dengan bijak. Dilarang spam, penipuan, dan mengganggu grup.",
+      donasi: () => "Dukungan MINATOHOST: hubungi OWN MINATOHOST.",
+      contact: () => "OWN MINATOHOST — 082180696427",
+      source: () => "MINATOHOST BOT",
+      time: () => "Waktu server: " + new Date().toLocaleTimeString("id-ID"),
+      date: () => "Tanggal: " + new Date().toLocaleDateString("id-ID"),
+      day: () => "Hari: " + new Date().toLocaleDateString("id-ID", { weekday: "long" }),
+      month: () => "Bulan: " + new Date().toLocaleDateString("id-ID", { month: "long" }),
+      year: () => "Tahun: " + new Date().getFullYear(),
+      count: () => input ? "Jumlah karakter: " + input.length + "\\nJumlah kata: " + input.trim().split(/\\s+/).filter(Boolean).length : "Contoh: .count MINATOHOST BOT",
+      length: () => "Panjang teks: " + input.length + " karakter",
+      charcount: () => "Jumlah karakter: " + input.length,
+      wordcount: () => "Jumlah kata: " + input.trim().split(/\\s+/).filter(Boolean).length,
+      reverse: () => input ? Array.from(input).reverse().join("") : "Masukkan teks. Contoh: .reverse halo",
+      upper: () => input ? input.toUpperCase() : "Masukkan teks.",
+      lower: () => input ? input.toLowerCase() : "Masukkan teks.",
+      title: () => input ? input.toLowerCase().replace(/\\b\\w/g, c => c.toUpperCase()) : "Masukkan teks.",
+      trim: () => input.trim() || "Masukkan teks.",
+      base64: () => input ? Buffer.from(input, "utf8").toString("base64") : "Masukkan teks.",
+      unbase64: () => { try { return Buffer.from(input, "base64").toString("utf8") || "Teks kosong."; } catch (_) { return "Base64 tidak valid."; } },
+      urlencode: () => encodeURIComponent(input),
+      urldecode: () => { try { return decodeURIComponent(input); } catch (_) { return "Format URL tidak valid."; } },
+      binary: () => input ? Array.from(Buffer.from(input)).map(n => n.toString(2).padStart(8, "0")).join(" ") : "Masukkan teks.",
+      hex: () => input ? Buffer.from(input).toString("hex") : "Masukkan teks.",
+      morse: () => { const m={a:".-",b:"-...",c:"-.-.",d:"-..",e:".",f:"..-.",g:"--.",h:"....",i:"..",j:".---",k:"-.-",l:".-..",m:"--",n:"-.",o:"---",p:".--.",q:"--.-",r:".-.",s:"...",t:"-",u:"..-",v:"...-",w:".--",x:"-..-",y:"-.--",z:"--.."," ":"/"}; return input.toLowerCase().split("").map(c=>m[c]||c).join(" "); },
+      rot13: () => input.replace(/[a-z]/gi,c=>String.fromCharCode(c.charCodeAt(0)+(c.toLowerCase()<="m"?13:-13))),
+      random: () => "Angka acak: " + (Math.floor(Math.random()*100)+1),
+      randombetween: () => { const n=args.map(Number); if(n.length<2||!n.every(Number.isFinite)||n[0]>n[1]) return "Contoh: .randombetween 1 100"; return "Hasil: " + (Math.floor(Math.random()*(n[1]-n[0]+1))+n[0]); },
+      choose: () => { const choices=input.split("|").map(x=>x.trim()).filter(Boolean); return choices.length>1 ? "Pilihan: "+pick(choices) : "Pisahkan pilihan dengan tanda |. Contoh: .choose merah|biru"; },
+      dice: () => "Dadu: " + (Math.floor(Math.random()*6)+1),
+      dice2: () => "Dua dadu: " + (Math.floor(Math.random()*6)+1) + " dan " + (Math.floor(Math.random()*6)+1),
+      coin: () => "Koin: " + pick(["ANGKA","GAMBAR"]),
+      coinflip: () => "Hasil lempar koin: " + pick(["ANGKA","GAMBAR"]),
+      flip: () => "Balik teks: " + Array.from(input).reverse().join(""),
+      randomnumber: () => "Angka acak: " + (Math.floor(Math.random()*1000)+1),
+      percentage: () => { const n=args.map(Number); return n.length>=2&&n.every(Number.isFinite) ? n[0]+"% dari "+n[1]+" = "+(n[0]*n[1]/100) : "Contoh: .percentage 20 500"; },
+      quote: () => pick(["Tetap melangkah walau pelan.","Proses kecil tetap membawa kemajuan.","Konsisten lebih penting daripada terburu-buru."]),
+      motivasi: () => pick(["Jangan menyerah hanya karena hari ini sulit.","Mulai dari yang bisa kamu lakukan sekarang.","Belajar dari kesalahan, lalu coba lagi."]),
+      pantun: () => pick(["Jalan pagi melihat mentari\\nUdara segar menyejukkan hati\\nTerus berusaha setiap hari\\nSemoga sukses menghampiri","Beli buku di hari Senin\\nBuku dibaca bersama teman\\nTetap semangat meraih ingin\\nJangan lupa jaga kesehatan"]),
+      fakta: () => pick(["Lebah berkomunikasi melalui gerakan tarian.","Gurita memiliki tiga jantung.","Satu hari di Venus lebih lama daripada satu tahunnya."]),
+      jokes: () => pick(["Kenapa komputer suka dingin? Karena banyak Windows.","Apa yang selalu naik tapi tak pernah turun? Umur.","Kenapa buku matematika sedih? Karena banyak masalah."]),
+      say: () => input || "Contoh: .say Halo semuanya!",
+      tebal: () => input ? "*"+input+"*" : "Masukkan teks.",
+      miring: () => input ? "_"+input+"_" : "Masukkan teks.",
+      garis: () => input ? "̶"+Array.from(input).join("̶")+"̶" : "Masukkan teks.",
+      bubble: () => input ? "ⓑⓤⓑⓑⓛⓔ: "+input : "Masukkan teks.",
+      small: () => input ? input.toLowerCase().replace(/[a-z]/g,c=>"abcdefghijklmnopqrstuvwxyz".includes(c)?String.fromCharCode(0x1D00+"abcdefghijklmnopqrstuvwxyz".indexOf(c)):c) : "Masukkan teks.",
+      clap: () => input ? input.split(" ").join(" 👏 ") : "Masukkan teks.",
+      mock: () => input ? Array.from(input).map((c,i)=>i%2?c.toLowerCase():c.toUpperCase()).join("") : "Masukkan teks.",
+      uwu: () => input ? input.replace(/r|l/g,"w").replace(/R|L/g,"W") : "Masukkan teks.",
+      poem: () => "Langit luas membentang biru,\\nLangkah kecil menuju tujuan,\\nTerus belajar menambah ilmu,\\nJangan lelah mengejar impian.",
+      bio: () => input ? "Bio: "+input : "Contoh: .bio Pecinta teknologi | Terus berkarya",
+      nickname: () => input ? "Ide nickname: "+input.replace(/[^a-z0-9]/gi,"")+"ツ" : "Contoh: .nickname Minato",
+      slogan: () => input ? input.toUpperCase()+" — MAKE IT REAL" : "Contoh: .slogan MINATOHOST",
+      caption: () => input ? input+" ✨" : "Contoh: .caption Hari yang menyenangkan",
+      statuswa: () => input ? "「 "+input+" 」" : "Masukkan teks.",
+      loveletter: () => "Hai! Terima kasih sudah menjadi bagian dari hari-hariku. Semoga hal baik selalu menyertaimu.",
+      thankyou: () => "Terima kasih banyak! Apresiasi kamu sangat berarti.",
+      sorry: () => "Maaf atas kesalahan yang terjadi. Aku akan berusaha memperbaikinya.",
+      truth: () => pick(["Apa hal paling berani yang pernah kamu lakukan?","Apa impian yang ingin kamu capai?","Apa pelajaran terbaik tahun ini?"]),
+      dare: () => pick(["Ceritakan pengalaman paling lucu.","Kirim emoji yang menggambarkan harimu.","Sebutkan satu hal yang kamu syukuri."]),
+      ship: () => { const names=input.split("|").map(x=>x.trim()).filter(Boolean); return names.length===2 ? names[0]+" ❤️ "+names[1]+" — cocok "+(Math.floor(Math.random()*101))+"%" : "Contoh: .ship nama1|nama2"; },
+      rate: () => input ? input+" mendapat nilai "+(Math.floor(Math.random()*101))+"/100 (sekadar hiburan)." : "Contoh: .rate MINATOHOST",
+      howgay: () => "Persentase random untuk hiburan saja: "+Math.floor(Math.random()*101)+"%. Tidak menggambarkan identitas siapa pun.",
+      howcute: () => "Skor lucu random: "+Math.floor(Math.random()*101)+"/100 (sekadar permainan).",
+      howsmart: () => "Skor random: "+Math.floor(Math.random()*101)+"/100 (sekadar permainan).",
+      pickupline: () => pick(["Kamu seperti notifikasi baik, selalu bikin hari lebih cerah.","Kalau semangat itu bintang, kamu pasti salah satunya."]),
+      roast: () => input ? input+", semangat ya, bahkan loading pun akhirnya selesai." : "Contoh: .roast nama",
+      compliment: () => input ? input+" punya potensi besar. Terus berkarya!" : "Kamu hebat karena terus mencoba.",
+      riddle: () => "Aku punya banyak gigi tetapi tidak bisa menggigit. Apakah aku?\\nKetik .answer untuk jawabannya.",
+      answer: () => "Jawabannya: sisir.",
+      quiz: () => "Kuis: Planet apa yang dikenal sebagai Planet Merah?\\nKetik .answer untuk melihat jawaban.",
+      suit: () => "Suit: " + pick(["BATU","GUNTING","KERTAS"]),
+      tebakangka: () => "Tebak angka dari 1 sampai 10: " + (Math.floor(Math.random()*10)+1) + " (angka contoh untuk ronde ini).",
+      "8ball": () => pick(["Iya.","Tidak.","Mungkin.","Coba lagi nanti.","Sepertinya begitu."])
+    };
+    if (utilityReplies[command]) return reply(utilityReplies[command]());
+
 
     if (command === "menu") return reply(menuText(msg.pushName));
     if (command === "owner") return reply("OWN MINATOHOST\nWhatsApp: 082180696427");
@@ -211,10 +301,28 @@ async function handleMessage(userId, sock, msg) {
       return reply(command + " " + (value === "on" ? "aktif." : "nonaktif."));
     }
 
-    if (["tagall", "hidetag", "kick", "promote", "demote"].includes(command)) {
+    if (["tagall", "hidetag", "kick", "promote", "demote", "add", "setname", "setdesc", "open", "close", "mute", "unmute", "revoke", "resetlink", "delete", "pin", "unpin"].includes(command)) {
       if (!group) return reply("Command ini hanya bisa digunakan di grup.");
       if (!senderAdmin) return reply("Khusus admin grup.");
       if (!metadata) return reply("Tidak bisa membaca data grup.");
+      if (["groupinfo","membercount","listadmin","groupname","groupdesc","grouplink","admins"].includes(command)) {
+        if (!metadata) return reply("Tidak bisa membaca data grup.");
+        if (command === "groupinfo") return reply("Nama: "+metadata.subject+"\\nID: "+jid+"\\nAnggota: "+(metadata.participants||[]).length);
+        if (command === "membercount") return reply("Jumlah anggota: "+(metadata.participants||[]).length);
+        if (command === "listadmin" || command === "admins") return reply("ADMIN GRUP\\n"+(metadata.participants||[]).filter(p=>p.admin).map(p=>"• "+numberFromJid(p.id)).join("\\n"));
+        if (command === "groupname") return reply("Nama grup: "+metadata.subject);
+        if (command === "groupdesc") return reply("Deskripsi: "+(metadata.desc||"Tidak ada deskripsi."));
+        if (command === "grouplink") { if (!senderAdmin) return reply("Khusus admin grup."); if (!botAdmin) return reply("Bot harus menjadi admin."); const code=await sock.groupInviteCode(jid); return reply("Link grup: https://chat.whatsapp.com/"+code); }
+      }
+      if (!botAdmin && ["add","setname","setdesc","open","close","mute","unmute","revoke","resetlink","delete","pin","unpin"].includes(command)) return reply("Jadikan bot admin grup terlebih dahulu.");
+      if (command === "setname") { if (!input) return reply("Contoh: .setname Nama Grup"); await sock.groupUpdateSubject(jid,input); return reply("Nama grup diperbarui."); }
+      if (command === "setdesc") { if (!input) return reply("Contoh: .setdesc Deskripsi grup"); await sock.groupUpdateDescription(jid,input); return reply("Deskripsi grup diperbarui."); }
+      if (command === "open" || command === "close") { await sock.groupSettingUpdate(jid,command==="open"?"not_announcement":"announcement"); return reply(command==="open"?"Grup dibuka untuk semua anggota.":"Grup dibatasi untuk admin."); }
+      if (command === "mute" || command === "unmute") { await sock.groupSettingUpdate(jid,command==="mute"?"announcement":"not_announcement"); return reply(command==="mute"?"Mode admin-only aktif.":"Semua anggota dapat mengirim pesan."); }
+      if (command === "revoke" || command === "resetlink") { const code=await sock.groupRevokeInvite(jid); return reply("Link undangan berhasil diperbarui.\\nhttps://chat.whatsapp.com/"+code); }
+      if (command === "add") { const number=(args[0]||"").replace(/\\D/g,""); if(number.length<10) return reply("Contoh: .add 62812xxxx"); await sock.groupParticipantsUpdate(jid,[number+"@s.whatsapp.net"],"add"); return reply("Permintaan tambah anggota diproses."); }
+      if (command === "delete") { const key=msg.message?.extendedTextMessage?.contextInfo?.stanzaId; const participant=msg.message?.extendedTextMessage?.contextInfo?.participant; if(!key||!participant) return reply("Balas pesan yang ingin dihapus."); await sock.sendMessage(jid,{delete:{remoteJid:jid,id:key,participant}}); return; }
+      if (command === "pin" || command === "unpin") return reply("Fitur pin pesan belum didukung oleh koneksi bot ini.");
       if (command === "tagall" || command === "hidetag") {
         const members = metadata.participants || [];
         if (members.length > 150) return reply("Jumlah anggota terlalu banyak untuk ditandai sekaligus.");
