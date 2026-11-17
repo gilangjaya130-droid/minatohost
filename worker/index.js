@@ -111,17 +111,25 @@ function menuText(pushName) {
   const greeting = hour < 11 ? "Selamat Pagi" : hour < 15 ? "Selamat Siang" : hour < 18 ? "Selamat Sore" : "Selamat Malam";
   const date = new Date().toLocaleDateString("id-ID");
   const sections = [
-    ["MAIN", [".menu", ".help", ".ping", ".runtime", ".owner", ".status", ".botinfo", ".profile"]],
-    ["GROUP", [".groupinfo", ".membercount", ".listadmin", ".groupname", ".groupdesc"]],
-    ["ADMIN", [".antilink on/off", ".welcome on/off", ".goodbye on/off", ".kick @tag", ".add nomor", ".promote @tag", ".demote @tag", ".setname teks", ".setdesc teks", ".open", ".close", ".mute", ".unmute", ".revoke", ".resetlink", ".grouplink", ".tagall", ".hidetag", ".delete", ".announce"]],
-    ["TOOLS", [".sum", ".average", ".min", ".max", ".square", ".sqrt", ".time", ".date", ".day", ".month", ".year", ".count", ".reverse", ".upper", ".lower", ".title", ".trim", ".length", ".charcount", ".wordcount", ".base64", ".unbase64", ".urlencode", ".urldecode", ".binary", ".hex", ".morse", ".rot13", ".random", ".randombetween", ".choose", ".dice", ".coin", ".percentage"]],
-    ["TEXT MAKER", [".quote", ".motivasi", ".pantun", ".fakta", ".jokes", ".say", ".tebal", ".miring", ".garis", ".bubble", ".small", ".emoji", ".clap", ".quote2", ".mock", ".uwu", ".poem", ".bio", ".nickname", ".slogan", ".caption", ".statuswa", ".loveletter", ".thankyou", ".sorry"]],
-    ["FUN", [".truth", ".dare", ".ship", ".rate", ".howlucky", ".howcute", ".howsmart", ".pickupline", ".roast", ".compliment", ".riddle", ".quiz", ".answer", ".suit", ".tebakangka", ".flip", ".dice2", ".8ball", ".coinflip", ".randomnumber"]],
-    ["INFORMASI", [".creator", ".version", ".server", ".runtime", ".uptime", ".support", ".rules", ".donasi", ".contact", ".source"]]
+    ["MINATO CORE", [".menu", ".help", ".ping", ".runtime", ".owner", ".status", ".botinfo", ".profile"]],
+    ["GROUP DATA", [".groupinfo", ".membercount", ".listadmin", ".groupname", ".groupdesc"]],
+    ["GROUP CONTROL", [".antilink on/off", ".welcome on/off", ".goodbye on/off", ".kick @tag", ".add nomor", ".promote @tag", ".demote @tag", ".setname teks", ".setdesc teks", ".open", ".close", ".mute", ".unmute", ".revoke", ".resetlink", ".grouplink", ".tagall", ".hidetag", ".delete", ".announce"]],
+    ["SMART TOOLS", [".sum", ".average", ".min", ".max", ".square", ".sqrt", ".time", ".date", ".day", ".month", ".year", ".count", ".reverse", ".upper", ".lower", ".title", ".trim", ".length", ".charcount", ".wordcount", ".base64", ".unbase64", ".urlencode", ".urldecode", ".binary", ".hex", ".morse", ".rot13", ".random", ".randombetween", ".choose", ".dice", ".coin", ".percentage"]],
+    ["TEXT STUDIO", [".quote", ".motivasi", ".pantun", ".fakta", ".jokes", ".say", ".tebal", ".miring", ".garis", ".bubble", ".small", ".emoji", ".clap", ".quote2", ".mock", ".uwu", ".poem", ".bio", ".nickname", ".slogan", ".caption", ".statuswa", ".loveletter", ".thankyou", ".sorry"]],
+    ["FUN ZONE", [".truth", ".dare", ".ship", ".rate", ".howlucky", ".howcute", ".howsmart", ".pickupline", ".roast", ".compliment", ".riddle", ".quiz", ".answer", ".suit", ".tebakangka", ".flip", ".dice2", ".8ball", ".coinflip", ".randomnumber"]],
+    ["BOT & INFO", [".creator", ".version", ".server", ".uptime", ".support", ".rules", ".donasi", ".contact", ".source"]]
   ];
-  return greeting + "\n\nUser: " + (pushName || "WhatsApp User") + "\nStatus: MINATOHOST\nDate: " + date +
-    "\nTotal command: 100+\n\n" + sections.map(([name, commands]) => "【 " + name + " 】\n" + commands.join("\n")).join("\n\n") +
-    "\n\nMINATOHOST BOT • Gunakan command dengan awalan titik.";
+  const total = sections.reduce((sum, section) => sum + section[1].length, 0);
+  return greeting + "\\n\\n" +
+    "╭━━〔 MINATOHOST BOT 〕━━╮\\n" +
+    "┃ User   : " + (pushName || "WhatsApp User") + "\\n" +
+    "┃ Status : FREE\\n" +
+    "┃ Date   : " + date + "\\n" +
+    "┃ Server : MINATOHOST\\n" +
+    "┃ Total  : " + total + "+ commands\\n" +
+    "╰━━━━━━━━━━━━━━━━━━━━╯\\n\\n" +
+    sections.map(([name, commands]) => "┏━━〔 " + name + " 〕\\n" + commands.map(command => "┃ • " + command).join("\\n") + "\\n┗━━━━━━━━━━━━").join("\\n\\n") +
+    "\\n\\nMINATOHOST • Made for WhatsApp\\nKetik .menu untuk melihat daftar command.";
 }
 async function handleMessage(userId, sock, msg) {
   try {
