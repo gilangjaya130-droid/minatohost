@@ -104,6 +104,7 @@
   }
 
   async function connectPairing() {
+    pairPageDismissed = false;
     const phone = $("phone").value.replace(/[^0-9]/g, "");
     if (phone.length < 10 || phone.length > 15) {
       toast("Masukkan nomor dengan kode negara, contoh 62812xxxx.");
