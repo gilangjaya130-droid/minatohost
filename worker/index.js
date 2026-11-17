@@ -112,11 +112,11 @@ function menuText(pushName) {
   const date = new Date().toLocaleDateString("id-ID");
   const sections = [
     ["MAIN", [".menu", ".help", ".ping", ".runtime", ".owner", ".status", ".botinfo", ".profile"]],
-    ["GROUP", [".groupinfo", ".membercount", ".listadmin", ".groupname", ".groupdesc", ".grouplink", ".tagall", ".hidetag"]],
-    ["ADMIN", [".antilink on/off", ".welcome on/off", ".goodbye on/off", ".kick @tag", ".add nomor", ".promote @tag", ".demote @tag", ".setname teks", ".setdesc teks", ".open", ".close", ".mute", ".unmute", ".revoke", ".resetlink", ".admins", ".delete", ".announce"]],
+    ["GROUP", [".groupinfo", ".membercount", ".listadmin", ".groupname", ".groupdesc"]],
+    ["ADMIN", [".antilink on/off", ".welcome on/off", ".goodbye on/off", ".kick @tag", ".add nomor", ".promote @tag", ".demote @tag", ".setname teks", ".setdesc teks", ".open", ".close", ".mute", ".unmute", ".revoke", ".resetlink", ".grouplink", ".tagall", ".hidetag", ".delete", ".announce"]],
     ["TOOLS", [".sum", ".average", ".min", ".max", ".square", ".sqrt", ".time", ".date", ".day", ".month", ".year", ".count", ".reverse", ".upper", ".lower", ".title", ".trim", ".length", ".charcount", ".wordcount", ".base64", ".unbase64", ".urlencode", ".urldecode", ".binary", ".hex", ".morse", ".rot13", ".random", ".randombetween", ".choose", ".dice", ".coin", ".percentage"]],
     ["TEXT MAKER", [".quote", ".motivasi", ".pantun", ".fakta", ".jokes", ".say", ".tebal", ".miring", ".garis", ".bubble", ".small", ".emoji", ".clap", ".quote2", ".mock", ".uwu", ".poem", ".bio", ".nickname", ".slogan", ".caption", ".statuswa", ".loveletter", ".thankyou", ".sorry"]],
-    ["FUN", [".truth", ".dare", ".ship", ".rate", ".howgay", ".howcute", ".howsmart", ".pickupline", ".roast", ".compliment", ".riddle", ".quiz", ".answer", ".suit", ".tebakangka", ".flip", ".dice2", ".8ball", ".coinflip", ".randomnumber"]],
+    ["FUN", [".truth", ".dare", ".ship", ".rate", ".howlucky", ".howcute", ".howsmart", ".pickupline", ".roast", ".compliment", ".riddle", ".quiz", ".answer", ".suit", ".tebakangka", ".flip", ".dice2", ".8ball", ".coinflip", ".randomnumber"]],
     ["INFORMASI", [".creator", ".version", ".server", ".runtime", ".uptime", ".support", ".rules", ".donasi", ".contact", ".source"]]
   ];
   return greeting + "\n\nUser: " + (pushName || "WhatsApp User") + "\nStatus: MINATOHOST\nDate: " + date +
@@ -228,7 +228,7 @@ async function handleMessage(userId, sock, msg) {
       dare: () => pick(["Ceritakan pengalaman paling lucu.","Kirim emoji yang menggambarkan harimu.","Sebutkan satu hal yang kamu syukuri."]),
       ship: () => { const names=input.split("|").map(x=>x.trim()).filter(Boolean); return names.length===2 ? names[0]+" ❤️ "+names[1]+" — cocok "+(Math.floor(Math.random()*101))+"%" : "Contoh: .ship nama1|nama2"; },
       rate: () => input ? input+" mendapat nilai "+(Math.floor(Math.random()*101))+"/100 (sekadar hiburan)." : "Contoh: .rate MINATOHOST",
-      howgay: () => "Persentase random untuk hiburan saja: "+Math.floor(Math.random()*101)+"%. Tidak menggambarkan identitas siapa pun.",
+      howlucky: () => "Skor keberuntungan hari ini: "+Math.floor(Math.random()*101)+"/100 (sekadar hiburan).",
       howcute: () => "Skor lucu random: "+Math.floor(Math.random()*101)+"/100 (sekadar permainan).",
       howsmart: () => "Skor random: "+Math.floor(Math.random()*101)+"/100 (sekadar permainan).",
       pickupline: () => pick(["Kamu seperti notifikasi baik, selalu bikin hari lebih cerah.","Kalau semangat itu bintang, kamu pasti salah satunya."]),
@@ -236,7 +236,7 @@ async function handleMessage(userId, sock, msg) {
       compliment: () => input ? input+" punya potensi besar. Terus berkarya!" : "Kamu hebat karena terus mencoba.",
       riddle: () => "Aku punya banyak gigi tetapi tidak bisa menggigit. Apakah aku?\\nKetik .answer untuk jawabannya.",
       answer: () => "Jawabannya: sisir.",
-      quiz: () => "Kuis: Planet apa yang dikenal sebagai Planet Merah?\\nKetik .answer untuk melihat jawaban.",
+      quiz: () => "Tebak-tebakan: Aku punya banyak gigi tetapi tidak bisa menggigit. Apakah aku?\\nKetik .answer untuk melihat jawaban.",
       suit: () => "Suit: " + pick(["BATU","GUNTING","KERTAS"]),
       tebakangka: () => "Tebak angka dari 1 sampai 10: " + (Math.floor(Math.random()*10)+1) + " (angka contoh untuk ronde ini).",
       "8ball": () => pick(["Iya.","Tidak.","Mungkin.","Coba lagi nanti.","Sepertinya begitu."]),
@@ -310,12 +310,12 @@ async function handleMessage(userId, sock, msg) {
       return reply(command + " " + (value === "on" ? "aktif." : "nonaktif."));
     }
 
-    if (["groupinfo","membercount","listadmin","groupname","groupdesc"].includes(command)) {
+    if (["groupinfo","membercount","listadmin","admins","groupname","groupdesc"].includes(command)) {
       if (!group) return reply("Command ini hanya bisa digunakan di grup.");
       if (!metadata) return reply("Tidak bisa membaca data grup.");
       if (command === "groupinfo") return reply("INFO GRUP\\nNama: "+(metadata.subject||"-")+"\\nID: "+jid+"\\nAnggota: "+(metadata.participants||[]).length+"\\nAdmin: "+(metadata.participants||[]).filter(p=>p.admin).length);
       if (command === "membercount") return reply("Jumlah anggota: "+(metadata.participants||[]).length);
-      if (command === "listadmin") { const admins=(metadata.participants||[]).filter(p=>p.admin); return reply("ADMIN GRUP\\n"+admins.map(p=>"• @"+numberFromJid(p.id)).join("\\n"),{mentions:admins.map(p=>p.id)}); }
+      if (command === "listadmin" || command === "admins") { const admins=(metadata.participants||[]).filter(p=>p.admin); return reply("ADMIN GRUP\\n"+admins.map(p=>"• @"+numberFromJid(p.id)).join("\\n"),{mentions:admins.map(p=>p.id)}); }
       if (command === "groupname") return reply("Nama grup: "+(metadata.subject||"-"));
       if (command === "groupdesc") return reply("Deskripsi grup: "+(metadata.desc||"Belum ada deskripsi."));
     }
