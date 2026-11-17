@@ -88,6 +88,7 @@
     try {
       const data = await api("/api/settings");
       const settings = data.settings || {};
+      $("botEnabled").checked = !!settings.bot_enabled;
       $("antiLink").checked = !!settings.anti_link;
       $("welcome").checked = !!settings.welcome;
       $("goodbye").checked = !!settings.goodbye;
@@ -99,6 +100,7 @@
     $("saveSettingsBtn").disabled = true;
     try {
       await api("/api/settings", {
+        bot_enabled: $("botEnabled").checked,
         anti_link: $("antiLink").checked,
         welcome: $("welcome").checked,
         goodbye: $("goodbye").checked
