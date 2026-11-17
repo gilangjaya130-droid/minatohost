@@ -114,9 +114,11 @@ function menuText(pushName) {
     "User: " + (pushName || "WhatsApp User") + "\n" +
     "Status: MINATOHOST\n" +
     "Date: " + date + "\n\n" +
-    "MAIN\n" +
+    "━━ MAIN ━━\n" +
     "• .menu\n• .ping\n• .runtime\n• .owner\n• .status\n\n" +
-    "GROUP ADMIN\n" +
+    "━━ GROUP ━━\n" +
+    "• .grouplink\n• .groupinfo\n• .groupname\n• .groupdesc\n• .groupmembers\n• .groupadmins\n• .groupowner\n• .groupid\n• .listonline\n\n" +
+    "━━ ADMIN ━━\n" +
     "• .antilink on/off\n• .welcome on/off\n• .goodbye on/off\n" +
     "• .tagall [pesan]\n• .hidetag [pesan]\n" +
     "• .kick @tag\n• .promote @tag\n• .demote @tag";
