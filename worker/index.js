@@ -113,9 +113,9 @@ function menuText(pushName) {
   const sections = [
     ["MAIN", [".menu", ".help", ".ping", ".runtime", ".owner", ".status", ".botinfo", ".profile"]],
     ["GROUP", [".groupinfo", ".membercount", ".listadmin", ".groupname", ".groupdesc", ".grouplink", ".tagall", ".hidetag"]],
-    ["ADMIN", [".antilink on/off", ".welcome on/off", ".goodbye on/off", ".kick @tag", ".add nomor", ".promote @tag", ".demote @tag", ".setname teks", ".setdesc teks", ".open", ".close", ".mute", ".unmute", ".revoke", ".resetlink", ".admins", ".delete", ".pin", ".unpin"]],
-    ["TOOLS", [".calc", ".math", ".time", ".date", ".day", ".month", ".year", ".count", ".reverse", ".upper", ".lower", ".title", ".trim", ".length", ".charcount", ".wordcount", ".base64", ".unbase64", ".urlencode", ".urldecode", ".binary", ".hex", ".morse", ".rot13", ".random", ".randombetween", ".choose", ".dice", ".coin", ".percentage"]],
-    ["TEXT MAKER", [".quote", ".motivasi", ".pantun", ".fakta", ".jokes", ".say", ".tebal", ".miring", ".garis", ".bubble", ".small", ". zalgo", ".clap", ".brat", ".mock", ".uwu", ".poem", ".bio", ".nickname", ".slogan", ".caption", ".statuswa", ".loveletter", ".thankyou", ".sorry"]],
+    ["ADMIN", [".antilink on/off", ".welcome on/off", ".goodbye on/off", ".kick @tag", ".add nomor", ".promote @tag", ".demote @tag", ".setname teks", ".setdesc teks", ".open", ".close", ".mute", ".unmute", ".revoke", ".resetlink", ".admins", ".delete", ".announce"]],
+    ["TOOLS", [".sum", ".average", ".min", ".max", ".square", ".sqrt", ".time", ".date", ".day", ".month", ".year", ".count", ".reverse", ".upper", ".lower", ".title", ".trim", ".length", ".charcount", ".wordcount", ".base64", ".unbase64", ".urlencode", ".urldecode", ".binary", ".hex", ".morse", ".rot13", ".random", ".randombetween", ".choose", ".dice", ".coin", ".percentage"]],
+    ["TEXT MAKER", [".quote", ".motivasi", ".pantun", ".fakta", ".jokes", ".say", ".tebal", ".miring", ".garis", ".bubble", ".small", ".emoji", ".clap", ".quote2", ".mock", ".uwu", ".poem", ".bio", ".nickname", ".slogan", ".caption", ".statuswa", ".loveletter", ".thankyou", ".sorry"]],
     ["FUN", [".truth", ".dare", ".ship", ".rate", ".howgay", ".howcute", ".howsmart", ".pickupline", ".roast", ".compliment", ".riddle", ".quiz", ".answer", ".suit", ".tebakangka", ".flip", ".dice2", ".8ball", ".coinflip", ".randomnumber"]],
     ["INFORMASI", [".creator", ".version", ".server", ".runtime", ".uptime", ".support", ".rules", ".donasi", ".contact", ".source"]]
   ];
@@ -239,7 +239,16 @@ async function handleMessage(userId, sock, msg) {
       quiz: () => "Kuis: Planet apa yang dikenal sebagai Planet Merah?\\nKetik .answer untuk melihat jawaban.",
       suit: () => "Suit: " + pick(["BATU","GUNTING","KERTAS"]),
       tebakangka: () => "Tebak angka dari 1 sampai 10: " + (Math.floor(Math.random()*10)+1) + " (angka contoh untuk ronde ini).",
-      "8ball": () => pick(["Iya.","Tidak.","Mungkin.","Coba lagi nanti.","Sepertinya begitu."])
+      "8ball": () => pick(["Iya.","Tidak.","Mungkin.","Coba lagi nanti.","Sepertinya begitu."]),
+      sum: () => { const n=args.map(Number); return n.length&&n.every(Number.isFinite) ? "Hasil: "+n.reduce((a,b)=>a+b,0) : "Contoh: .sum 10 20 30"; },
+      average: () => { const n=args.map(Number); return n.length&&n.every(Number.isFinite) ? "Rata-rata: "+(n.reduce((a,b)=>a+b,0)/n.length) : "Contoh: .average 10 20 30"; },
+      min: () => { const n=args.map(Number); return n.length&&n.every(Number.isFinite) ? "Nilai terkecil: "+Math.min(...n) : "Contoh: .min 10 20 30"; },
+      max: () => { const n=args.map(Number); return n.length&&n.every(Number.isFinite) ? "Nilai terbesar: "+Math.max(...n) : "Contoh: .max 10 20 30"; },
+      square: () => { const n=Number(args[0]); return Number.isFinite(n)&&args.length ? "Kuadrat: "+(n*n) : "Contoh: .square 12"; },
+      sqrt: () => { const n=Number(args[0]); return Number.isFinite(n)&&n>=0&&args.length ? "Akar kuadrat: "+Math.sqrt(n) : "Contoh: .sqrt 144"; },
+      quote2: () => pick(["Sederhana bukan berarti biasa.","Fokus pada tujuan, bukan gangguan.","Hari ini kesempatan baru untuk belajar."]),
+      emoji: () => input ? input+" ✨🌟💫" : "Contoh: .emoji Halo"
+
     };
     if (utilityReplies[command]) return reply(utilityReplies[command]());
 
@@ -301,19 +310,26 @@ async function handleMessage(userId, sock, msg) {
       return reply(command + " " + (value === "on" ? "aktif." : "nonaktif."));
     }
 
-    if (["tagall", "hidetag", "kick", "promote", "demote", "add", "setname", "setdesc", "open", "close", "mute", "unmute", "revoke", "resetlink", "delete", "pin", "unpin"].includes(command)) {
+    if (["groupinfo","membercount","listadmin","groupname","groupdesc"].includes(command)) {
+      if (!group) return reply("Command ini hanya bisa digunakan di grup.");
+      if (!metadata) return reply("Tidak bisa membaca data grup.");
+      if (command === "groupinfo") return reply("INFO GRUP\\nNama: "+(metadata.subject||"-")+"\\nID: "+jid+"\\nAnggota: "+(metadata.participants||[]).length+"\\nAdmin: "+(metadata.participants||[]).filter(p=>p.admin).length);
+      if (command === "membercount") return reply("Jumlah anggota: "+(metadata.participants||[]).length);
+      if (command === "listadmin") { const admins=(metadata.participants||[]).filter(p=>p.admin); return reply("ADMIN GRUP\\n"+admins.map(p=>"• @"+numberFromJid(p.id)).join("\\n"),{mentions:admins.map(p=>p.id)}); }
+      if (command === "groupname") return reply("Nama grup: "+(metadata.subject||"-"));
+      if (command === "groupdesc") return reply("Deskripsi grup: "+(metadata.desc||"Belum ada deskripsi."));
+    }
+    if (command === "grouplink") {
+      if (!group) return reply("Command ini hanya bisa digunakan di grup.");
+      if (!senderAdmin) return reply("Khusus admin grup.");
+      if (!botAdmin) return reply("Bot harus menjadi admin.");
+      const code=await sock.groupInviteCode(jid);
+      return reply("LINK GRUP\\nhttps://chat.whatsapp.com/"+code);
+    }
+    if (["tagall", "hidetag", "kick", "promote", "demote", "add", "setname", "setdesc", "open", "close", "mute", "unmute", "revoke", "resetlink", "delete", "announce"].includes(command)) {
       if (!group) return reply("Command ini hanya bisa digunakan di grup.");
       if (!senderAdmin) return reply("Khusus admin grup.");
       if (!metadata) return reply("Tidak bisa membaca data grup.");
-      if (["groupinfo","membercount","listadmin","groupname","groupdesc","grouplink","admins"].includes(command)) {
-        if (!metadata) return reply("Tidak bisa membaca data grup.");
-        if (command === "groupinfo") return reply("Nama: "+metadata.subject+"\\nID: "+jid+"\\nAnggota: "+(metadata.participants||[]).length);
-        if (command === "membercount") return reply("Jumlah anggota: "+(metadata.participants||[]).length);
-        if (command === "listadmin" || command === "admins") return reply("ADMIN GRUP\\n"+(metadata.participants||[]).filter(p=>p.admin).map(p=>"• "+numberFromJid(p.id)).join("\\n"));
-        if (command === "groupname") return reply("Nama grup: "+metadata.subject);
-        if (command === "groupdesc") return reply("Deskripsi: "+(metadata.desc||"Tidak ada deskripsi."));
-        if (command === "grouplink") { if (!senderAdmin) return reply("Khusus admin grup."); if (!botAdmin) return reply("Bot harus menjadi admin."); const code=await sock.groupInviteCode(jid); return reply("Link grup: https://chat.whatsapp.com/"+code); }
-      }
       if (!botAdmin && ["add","setname","setdesc","open","close","mute","unmute","revoke","resetlink","delete","pin","unpin"].includes(command)) return reply("Jadikan bot admin grup terlebih dahulu.");
       if (command === "setname") { if (!input) return reply("Contoh: .setname Nama Grup"); await sock.groupUpdateSubject(jid,input); return reply("Nama grup diperbarui."); }
       if (command === "setdesc") { if (!input) return reply("Contoh: .setdesc Deskripsi grup"); await sock.groupUpdateDescription(jid,input); return reply("Deskripsi grup diperbarui."); }
@@ -322,7 +338,7 @@ async function handleMessage(userId, sock, msg) {
       if (command === "revoke" || command === "resetlink") { const code=await sock.groupRevokeInvite(jid); return reply("Link undangan berhasil diperbarui.\\nhttps://chat.whatsapp.com/"+code); }
       if (command === "add") { const number=(args[0]||"").replace(/\\D/g,""); if(number.length<10) return reply("Contoh: .add 62812xxxx"); await sock.groupParticipantsUpdate(jid,[number+"@s.whatsapp.net"],"add"); return reply("Permintaan tambah anggota diproses."); }
       if (command === "delete") { const key=msg.message?.extendedTextMessage?.contextInfo?.stanzaId; const participant=msg.message?.extendedTextMessage?.contextInfo?.participant; if(!key||!participant) return reply("Balas pesan yang ingin dihapus."); await sock.sendMessage(jid,{delete:{remoteJid:jid,id:key,participant}}); return; }
-      if (command === "pin" || command === "unpin") return reply("Fitur pin pesan belum didukung oleh koneksi bot ini.");
+      if (command === "announce") { if (!input) return reply("Contoh: .announce Pengumuman penting"); return reply("📢 PENGUMUMAN ADMIN\\n"+input); }
       if (command === "tagall" || command === "hidetag") {
         const members = metadata.participants || [];
         if (members.length > 150) return reply("Jumlah anggota terlalu banyak untuk ditandai sekaligus.");
