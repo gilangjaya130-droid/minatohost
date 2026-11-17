@@ -1,33 +1,26 @@
 (() => {
   const cfg = window.MINATO_CONFIG || {};
   const $ = (id) => document.getElementById(id);
-  const dashboardView = $("dashboardView");
   const toast = (message) => {
     $("toast").textContent = message;
     $("toast").classList.add("show");
-    setTimeout(() => $("toast").classList.remove("show"), 2600);
+    setTimeout(() => $("toast").classList.remove("show"), 2800);
   };
   const configured = cfg.SUPABASE_URL && cfg.SUPABASE_ANON_KEY &&
-    !String(cfg.SUPABASE_URL).startsWith("ISI_") && !String(cfg.SUPABASE_ANON_KEY).startsWith("ISI_");
+    !String(cfg.SUPABASE_URL).startsWith("ISI_") &&
+    !String(cfg.SUPABASE_ANON_KEY).startsWith("ISI_");
   let sb = null;
   let currentSession = null;
+  let currentSettings = { bot_enabled: false, anti_link: false, welcome: false, goodbye: false };
   let pollHandle = null;
 
-  function showDashboard() {
-    authView.classList.add("hidden");
-    dashboardView.classList.remove("hidden");
-    $("accountEmail").textContent = "Mode tamu • sesi tersimpan di perangkat ini";
-    loadSettings();
-    refreshStatus();
-    refreshLogs();
-    if (pollHandle) clearInterval(pollHandle);
-    pollHandle = setInterval(refreshStatus, 3500);
-  }
   async function api(path, body) {
-    if (!cfg.BOT_API_URL || String(cfg.BOT_API_URL).startsWith("ISI_")) throw new Error("URL worker belum diatur.");
+    if (!cfg.BOT_API_URL || String(cfg.BOT_API_URL).startsWith("ISI_")) {
+      throw new Error("Worker bot belum dipasang. URL worker belum diatur.");
+    }
     const tokenResult = await sb.auth.getSession();
     const token = tokenResult.data.session && tokenResult.data.session.access_token;
-    if (!token) throw new Error("Sesi login habis. Silakan masuk kembali.");
+    if (!token) throw new Error("Sesi tamu tidak ditemukan. Muat ulang halaman.");
     const response = await fetch(String(cfg.BOT_API_URL).replace(/\/$/, "") + path, {
       method: body ? "POST" : "GET",
       headers: { "Content-Type": "application/json", "Authorization": "Bearer " + token },
@@ -37,104 +30,89 @@
     if (!response.ok) throw new Error(data.error || "Permintaan gagal (" + response.status + ").");
     return data;
   }
-  async function handleAuth(event) {
-    event.preventDefault();
-    if (!configured) {
-      $("authMessage").textContent = "Konfigurasi Supabase belum diisi di file config.js.";
-      return;
-    }
-    const email = $("email").value.trim();
-    const password = $("password").value;
-    const submit = $("authSubmit");
-    submit.disabled = true;
-    submit.textContent = "Memproses...";
-    $("authMessage").textContent = "";
-    try {
-      if (authMode === "register") {
-        const result = await sb.auth.signUp({ email, password });
-        if (result.error) throw result.error;
-        $("authMessage").textContent = "Pendaftaran berhasil. Jika verifikasi email aktif, cek kotak masuk lalu masuk.";
-      } else {
-        const result = await sb.auth.signInWithPassword({ email, password });
-        if (result.error) throw result.error;
-        currentSession = result.data.session;
-        showDashboard();
-      }
-    } catch (error) {
-      $("authMessage").textContent = error.message || "Tidak dapat memproses akun.";
-    } finally {
-      submit.disabled = false;
-      submit.textContent = authMode === "login" ? "Masuk" : "Buat akun";
-    }
+
+  function showDashboard() {
+    $("dashboardView").classList.remove("hidden");
+    $("accountEmail").textContent = "Mode tamu • tanpa login dan daftar";
+    loadSettings();
+    refreshStatus();
+    refreshLogs();
+    if (pollHandle) clearInterval(pollHandle);
+    pollHandle = setInterval(() => { refreshStatus(); }, 3000);
   }
+
   async function loadSettings() {
     try {
       const data = await api("/api/settings");
-      const settings = data.settings || {};
-      $("botEnabled").checked = !!settings.bot_enabled;
-      $("antiLink").checked = !!settings.anti_link;
-      $("welcome").checked = !!settings.welcome;
-      $("goodbye").checked = !!settings.goodbye;
+      currentSettings = { ...currentSettings, ...(data.settings || {}) };
+      renderBotState();
     } catch (error) {
-      $("settingsMessage").textContent = error.message;
+      $("botMessage").textContent = error.message;
     }
   }
-  async function saveSettings() {
-    $("saveSettingsBtn").disabled = true;
+
+  function renderBotState() {
+    const active = !!currentSettings.bot_enabled;
+    $("botState").textContent = active ? "BOT AKTIF" : "BOT NONAKTIF";
+    $("botState").classList.toggle("connected", active);
+    $("startBtn").disabled = active || $("connectionState").textContent !== "TERHUBUNG";
+    $("stopBtn").disabled = !active;
+  }
+
+  async function setBotActive(active) {
+    const button = active ? $("startBtn") : $("stopBtn");
+    button.disabled = true;
+    button.textContent = active ? "STARTING..." : "STOPPING...";
+    $("botMessage").textContent = "";
     try {
-      await api("/api/settings", {
-        bot_enabled: $("botEnabled").checked,
-        anti_link: $("antiLink").checked,
-        welcome: $("welcome").checked,
-        goodbye: $("goodbye").checked
-      });
-      $("settingsMessage").textContent = "Pengaturan berhasil disimpan.";
-      toast("Pengaturan tersimpan.");
+      const next = { ...currentSettings, bot_enabled: active };
+      const data = await api("/api/settings", next);
+      currentSettings = { ...currentSettings, ...(data.settings || next) };
+      renderBotState();
+      $("botMessage").textContent = active ? "Bot berhasil diaktifkan." : "Bot dihentikan. Koneksi WhatsApp tetap tertaut.";
+      toast(active ? "MINATOHOST BOT aktif." : "MINATOHOST BOT dihentikan.");
     } catch (error) {
-      $("settingsMessage").textContent = error.message;
+      $("botMessage").textContent = error.message;
+      toast(error.message);
     } finally {
-      $("saveSettingsBtn").disabled = false;
+      button.textContent = active ? "START" : "STOP";
+      renderBotState();
     }
   }
-  async function connect(mode) {
+
+  async function connectQR() {
     const phone = $("phone").value.replace(/[^0-9]/g, "");
-    if (mode === "pairing" && (phone.length < 10 || phone.length > 15)) {
-      toast("Masukkan nomor dengan kode negara, contoh 62812xxxx.");
+    if (phone && (phone.length < 10 || phone.length > 15)) {
+      toast("Periksa nomor WhatsApp. Gunakan kode negara, contoh 62812xxxx.");
       return;
     }
-    $("pairBox").classList.add("hidden");
     $("qrBox").classList.add("hidden");
-    const button = mode === "pairing" ? $("pairBtn") : $("qrBtn");
-    button.disabled = true;
-    button.textContent = "Menghubungkan...";
+    $("qrBtn").disabled = true;
+    $("qrBtn").textContent = "MEMBUAT QR...";
     try {
-      await api("/api/connect", { mode, phone: mode === "pairing" ? phone : "" });
-      toast("Permintaan koneksi dikirim. Menunggu WhatsApp...");
-      setTimeout(refreshStatus, 1200);
+      await api("/api/connect", { mode: "qr", phone });
+      toast("Permintaan QR dikirim. Tunggu QR muncul.");
+      setTimeout(refreshStatus, 900);
     } catch (error) {
       toast(error.message);
     } finally {
-      button.disabled = false;
-      button.textContent = mode === "pairing" ? "Pairing Code" : "Gunakan QR";
+      $("qrBtn").disabled = false;
+      $("qrBtn").textContent = "GUNAKAN QR";
     }
   }
+
   async function refreshStatus() {
     if (!currentSession) return;
     try {
       const data = await api("/api/status");
       const status = data.status || "disconnected";
-      const state = $("connectionState");
-      state.textContent = status === "connected" ? "TERHUBUNG" :
+      $("connectionState").textContent =
+        status === "connected" ? "TERHUBUNG" :
         status === "connecting" ? "MENGHUBUNGKAN" :
         status === "waiting_qr" ? "MENUNGGU QR" : "BELUM TERHUBUNG";
-      state.classList.toggle("connected", status === "connected");
+      $("connectionState").classList.toggle("connected", status === "connected");
       $("disconnectBtn").classList.toggle("hidden", status === "disconnected");
-      if (data.pairingCode) {
-        $("pairCode").textContent = data.pairingCode;
-        $("pairBox").classList.remove("hidden");
-      } else if (status !== "connecting") {
-        $("pairBox").classList.add("hidden");
-      }
+      $("qrBtn").disabled = ["connected", "connecting", "waiting_qr"].includes(status);
       if (data.qr) {
         $("qrImage").src = data.qr;
         $("qrBox").classList.remove("hidden");
@@ -142,20 +120,28 @@
         $("qrBox").classList.add("hidden");
       }
       if (data.phone) $("phone").value = data.phone;
+      renderBotState();
     } catch (error) {
       $("connectionState").textContent = "API BELUM SIAP";
+      $("botMessage").textContent = error.message;
+      renderBotState();
     }
   }
+
   async function disconnect() {
-    if (!confirm("Putuskan sesi WhatsApp yang sedang terhubung?")) return;
+    if (!confirm("Putuskan tautan WhatsApp dari MINATOHOST?")) return;
     try {
       await api("/api/disconnect", {});
-      $("pairBox").classList.add("hidden");
+      currentSettings.bot_enabled = false;
       $("qrBox").classList.add("hidden");
-      toast("Sesi diputuskan.");
-      refreshStatus();
-    } catch (error) { toast(error.message); }
+      $("botMessage").textContent = "WhatsApp sudah diputuskan.";
+      toast("Sesi WhatsApp diputuskan.");
+      await refreshStatus();
+    } catch (error) {
+      toast(error.message);
+    }
   }
+
   async function refreshLogs() {
     try {
       const data = await api("/api/logs");
@@ -175,24 +161,20 @@
         row.append(message, time);
         return row.outerHTML;
       }).join("");
-    } catch (error) {
+    } catch (_) {
       $("logsList").innerHTML = '<p class="muted">Log belum tersedia.</p>';
     }
   }
 
-
-  $("pairBtn").addEventListener("click", () => connect("pairing"));
-  $("qrBtn").addEventListener("click", () => connect("qr"));
+  $("qrBtn").addEventListener("click", connectQR);
   $("disconnectBtn").addEventListener("click", disconnect);
-  $("saveSettingsBtn").addEventListener("click", saveSettings);
+  $("startBtn").addEventListener("click", () => setBotActive(true));
+  $("stopBtn").addEventListener("click", () => setBotActive(false));
   $("refreshLogsBtn").addEventListener("click", refreshLogs);
-  $("copyCodeBtn").addEventListener("click", async () => {
-    try { await navigator.clipboard.writeText($("pairCode").textContent); toast("Kode disalin."); }
-    catch (_) { toast("Tidak dapat menyalin otomatis."); }
-  });
 
   if (!configured || !window.supabase) {
-    toast("Konfigurasi Supabase belum lengkap. Hubungi pengelola MINATOHOST.");
+    toast("Konfigurasi Supabase belum lengkap. Dashboard belum dapat menghubungkan bot.");
+    $("botMessage").textContent = "Pengelola perlu mengisi Supabase publishable key dan URL worker.";
     return;
   }
   sb = window.supabase.createClient(cfg.SUPABASE_URL, cfg.SUPABASE_ANON_KEY);
@@ -205,10 +187,11 @@
         if (guest.error) throw guest.error;
         currentSession = guest.data.session;
       }
-      if (currentSession) showDashboard();
-      else throw new Error("Sesi tamu tidak berhasil dibuat.");
+      if (!currentSession) throw new Error("Sesi tamu tidak berhasil dibuat.");
+      showDashboard();
     } catch (error) {
-      toast("Gagal membuka mode tanpa login: " + (error.message || "Periksa pengaturan Supabase."));
+      toast("Mode tamu gagal dibuat: " + (error.message || "Periksa pengaturan Supabase."));
+      $("botMessage").textContent = "Aktifkan Anonymous Sign-In di Supabase Authentication.";
     }
   })();
   sb.auth.onAuthStateChange((_event, session) => {
@@ -217,5 +200,4 @@
       showDashboard();
     }
   });
-
 })();
