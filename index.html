@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#080d18">
+  <meta name="description" content="MINATOHOST BOT dashboard">
+  <title>MINATOHOST BOT</title>
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+  <div class="glow glow-a"></div><div class="glow glow-b"></div>
+  <main class="shell">
+    <header class="topbar">
+      <a class="brand" href="#"><span class="brand-mark">M</span><span>MINATOHOST<small>BOT CONTROL PANEL</small></span></a>
+      <span class="top-status"><i></i> CONTROL PANEL</span>
+    </header>
+
+    <section id="authView" class="auth-layout">
+      <div class="intro">
+        <div class="eyebrow">WHATSAPP AUTOMATION</div>
+        <h1>Kelola bot WhatsApp<br><span>dalam satu tempat.</span></h1>
+        <p>Hubungkan nomor WhatsApp milikmu dengan QR atau pairing code. Setiap akun memiliki sesi dan pengaturan sendiri.</p>
+        <div class="feature-pills"><span>Multi akun</span><span>Pairing code</span><span>QR connect</span></div>
+      </div>
+      <div class="panel auth-panel">
+        <div class="tabs"><button class="tab active" id="loginTab">Masuk</button><button class="tab" id="registerTab">Daftar</button></div>
+        <h2 id="authTitle">Selamat datang</h2>
+        <p class="muted" id="authSubtitle">Masuk ke akun MINATOHOST kamu.</p>
+        <form id="authForm">
+          <label>Email</label><input id="email" type="email" autocomplete="email" placeholder="nama@email.com" required>
+          <label>Password</label><input id="password" type="password" autocomplete="current-password" minlength="6" placeholder="Minimal 6 karakter" required>
+          <button class="primary full" id="authSubmit" type="submit">Masuk</button>
+        </form>
+        <p id="authMessage" class="notice" aria-live="polite"></p>
+        <p class="tiny">Dengan melanjutkan, gunakan bot secara wajar dan hanya hubungkan nomor milikmu sendiri.</p>
+      </div>
+    </section>
+
+    <section id="dashboardView" class="dashboard hidden">
+      <div class="welcome-row">
+        <div><div class="eyebrow">DASHBOARD</div><h1>MINATOHOST BOT</h1><p class="muted" id="accountEmail"></p></div>
+        <button class="ghost" id="logoutBtn">Keluar</button>
+      </div>
+      <div class="grid">
+        <section class="panel connection-panel">
+          <div class="section-heading"><div><div class="eyebrow">WHATSAPP SESSION</div><h2>Koneksi perangkat</h2></div><span class="state" id="connectionState">BELUM TERHUBUNG</span></div>
+          <p class="muted">Hubungkan WhatsApp milikmu. Jangan bagikan kode pairing atau QR kepada orang lain.</p>
+          <label for="phone">Nomor WhatsApp (kode negara, tanpa +)</label>
+          <input id="phone" type="tel" inputmode="numeric" placeholder="62812xxxxxxxx">
+          <div class="actions">
+            <button class="primary" id="pairBtn">Pairing Code</button>
+            <button class="secondary" id="qrBtn">Gunakan QR</button>
+            <button class="danger hidden" id="disconnectBtn">Putuskan</button>
+          </div>
+          <div id="pairBox" class="result-box hidden"><span class="muted">PAIRING CODE</span><strong id="pairCode">--------</strong><button class="copy-btn" id="copyCodeBtn">Salin kode</button></div>
+          <div id="qrBox" class="qr-box hidden"><img id="qrImage" alt="QR code WhatsApp"><p class="muted">WhatsApp → Perangkat tertaut → Tautkan perangkat</p></div>
+          <p class="tiny">Pairing code dan QR hanya berlaku untuk sesi yang sedang kamu hubungkan.</p>
+        </section>
+
+        <section class="panel">
+          <div class="eyebrow">BOT SETTINGS</div><h2>Pengaturan grup</h2>
+          <p class="muted">Pengaturan ini berlaku untuk grup yang dikelola oleh sesi WhatsApp kamu.</p>
+          <div class="setting-row"><div><b>Anti-link</b><small>Hapus pesan berisi tautan dari anggota non-admin.</small></div><label class="switch"><input type="checkbox" id="antiLink"><span></span></label></div>
+          <div class="setting-row"><div><b>Welcome</b><small>Sapaan saat anggota baru bergabung.</small></div><label class="switch"><input type="checkbox" id="welcome"><span></span></label></div>
+          <div class="setting-row"><div><b>Goodbye</b><small>Pesan saat anggota keluar dari grup.</small></div><label class="switch"><input type="checkbox" id="goodbye"><span></span></label></div>
+          <button class="secondary full" id="saveSettingsBtn">Simpan pengaturan</button>
+          <p id="settingsMessage" class="notice"></p>
+        </section>
+      </div>
+      <section class="panel logs-panel">
+        <div class="section-heading"><div><div class="eyebrow">ACTIVITY</div><h2>Aktivitas terbaru</h2></div><button class="ghost small" id="refreshLogsBtn">Muat ulang</button></div>
+        <div id="logsList" class="logs-list"><p class="muted">Belum ada aktivitas.</p></div>
+      </section>
+      <footer>MINATOHOST BOT <span>•</span> Gunakan fitur grup hanya jika kamu memiliki izin admin.</footer>
+    </section>
+    <div id="toast" class="toast" role="status"></div>
+  </main>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="./config.js"></script>
+  <script src="./app.js"></script>
+</body>
+</html>
