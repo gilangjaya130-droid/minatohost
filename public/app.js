@@ -17,7 +17,7 @@
 
   async function api(path, body) {
     if (!cfg.BOT_API_URL || String(cfg.BOT_API_URL).startsWith("ISI_")) {
-      throw new Error("Worker bot belum dipasang. URL worker belum diatur.");
+      throw new Error("Worker WhatsApp belum online. Layanan bot perlu dijalankan di hosting terlebih dahulu.");
     }
     const tokenResult = await sb.auth.getSession();
     const token = tokenResult.data.session && tokenResult.data.session.access_token;
@@ -210,8 +210,8 @@
   $("refreshLogsBtn").addEventListener("click", refreshLogs);
 
   if (!configured || !window.supabase) {
-    toast("Konfigurasi dashboard belum lengkap. Bot belum dapat dihubungkan.");
-    $("botMessage").textContent = "Pengelola perlu melengkapi konfigurasi koneksi dan URL worker.";
+    toast("Koneksi bot belum siap. Worker WhatsApp belum online.");
+    $("botMessage").textContent = "Dashboard belum siap: konfigurasi Supabase dan alamat Worker WhatsApp harus dilengkapi.";
     return;
   }
   sb = window.supabase.createClient(cfg.SUPABASE_URL, cfg.SUPABASE_ANON_KEY);
