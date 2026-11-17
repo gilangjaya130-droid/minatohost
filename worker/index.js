@@ -120,7 +120,7 @@ function menuText(pushName) {
     ["BOT & INFO", [".creator", ".version", ".server", ".uptime", ".support", ".rules", ".donasi", ".contact", ".source"]]
   ];
   const total = sections.reduce((sum, section) => sum + section[1].length, 0);
-  return greeting + "\\n\\n" +
+  return greeting + "\n\n" +
     "╭━━〔 MINATOHOST BOT 〕━━╮\\n" +
     "┃ User   : " + (pushName || "WhatsApp User") + "\\n" +
     "┃ Status : FREE\\n" +
