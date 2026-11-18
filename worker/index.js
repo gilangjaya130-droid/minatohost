@@ -134,7 +134,6 @@ const EXTRA_ALIASES = {
   "buatnama": "nickname",
   "buatcaption": "caption",
   "captionwa": "caption",
-  "status": "statuswa",
   "buatstatus": "statuswa",
   "pesancinta": "loveletter",
   "maaf": "sorry",
@@ -239,7 +238,7 @@ const EXTRA_ALIASES = {
   "cekjam": "time",
   "cekhari": "day",
   "cektahun": "year"
-}
+};
 
 
 async function logActivity(userId, message, level = "info") {
@@ -331,6 +330,7 @@ function menuText(pushName) {
     "┃ User    : " + (pushName || "WhatsApp User") + "\n" +
     "┃ Founder : MAYON\n" +
     "┃ Server  : minatohost\n" +
+    "┃ Commands: " + total + "+\n" +
     "┃ Date    : " + date + "\n" +
     "╰━━━━━━━━━━━━━━╯\n\n" +
     sections.map(([name, commands]) => "┏━━〔 " + name + " 〕\n" + commands.map(command => "┃ • " + command).join("\n") + "\n┗━━━━━━━━━━━━").join("\n\n") +
