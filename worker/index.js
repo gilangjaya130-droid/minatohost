@@ -164,7 +164,7 @@ async function handleMessage(userId, sock, msg) {
     const pick = (items) => items[Math.floor(Math.random() * items.length)];
     const utilityReplies = {
       help: () => menuText(msg.pushName),
-      botinfo: () => "MINATOHOST BOT\\nMulti-device WhatsApp bot\\nStatus: " + (sock.user ? "connected" : "connecting"),
+      botinfo: () => "MINATOHOST BOT\\nMulti-device WhatsApp bot\\nStatus: " + (sock.user ? "connected" : "connecting") + "\\nChannel: https://whatsapp.com/channel/0029Vb7YSQO0AgW6egCHE242",
       profile: () => "Nama: " + (msg.pushName || "WhatsApp User") + "\\nNomor: " + numberFromJid(sender),
       info: () => "MINATOHOST BOT — Asisten WhatsApp dengan fitur grup, teks, dan utilitas.",
       creator: () => "Creator: OWN MINATOHOST\\nWhatsApp: 082180696427",
