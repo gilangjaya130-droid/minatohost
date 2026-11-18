@@ -86,7 +86,6 @@ const EXTRA_ALIASES = {
   "biner": "binary",
   "heksadesimal": "hex",
   "kodehex": "hex",
-  "kode morse": "morse",
   "sandirot": "rot13",
   "acak": "random",
   "angkaacak": "randomnumber",
@@ -133,14 +132,11 @@ const EXTRA_ALIASES = {
   "buatnickname": "nickname",
   "namakeren": "nickname",
   "buatnama": "nickname",
-  "buat slogan": "slogan",
   "buatcaption": "caption",
   "captionwa": "caption",
   "status": "statuswa",
   "buatstatus": "statuswa",
   "pesancinta": "loveletter",
-  "ucapanterima kasih": "thankyou",
-  "minta maaf": "sorry",
   "maaf": "sorry",
   "jujur": "truth",
   "tantangan": "dare",
@@ -241,11 +237,9 @@ const EXTRA_ALIASES = {
   "cekserver": "server",
   "cekversi": "version",
   "cekjam": "time",
-  "cek tanggal": "date",
   "cekhari": "day",
-  "cektahun": "year",
-  "ce bulan": "month"
-};
+  "cektahun": "year"
+}
 
 
 async function logActivity(userId, message, level = "info") {
@@ -369,7 +363,8 @@ async function handleMessage(userId, sock, msg) {
 
     if (!text.startsWith(".")) return;
     const parts = text.slice(1).trim().split(/\s+/);
-    const command = (parts.shift() || "").toLowerCase();
+    let command = (parts.shift() || "").toLowerCase();
+    command = EXTRA_ALIASES[command] || command;
     const args = parts;
     const reply = (value, extra) => sendReply(sock, jid, msg, value, extra || {});
     const input = args.join(" ");
