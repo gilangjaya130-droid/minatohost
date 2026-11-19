@@ -2,22 +2,18 @@ services:
   - type: web
     name: minatohost-worker
     runtime: node
-    plan: starter
+    plan: free
     rootDir: worker
     buildCommand: npm install
     startCommand: npm start
-    disk:
-      name: minatohost-sessions
-      mountPath: /var/data
-      sizeGB: 1
     envVars:
       - key: PORT
         value: "3000"
       - key: SESSION_DIR
-        value: /var/data/sessions
+        value: /tmp/sessions
       - key: SUPABASE_URL
         sync: false
       - key: SUPABASE_SERVICE_ROLE_KEY
         sync: false
       - key: CORS_ORIGIN
-        value: "*"
+        value: "https://minatohost.vercel.app"
